@@ -1,201 +1,372 @@
 #!/usr/bin/python3
-"""Defines unittests for models/review.py.
+'''Unit Review For City Model'''
 
-Unittest classes:
-    TestReview_instantiation
-    TestReview_save
-    TestReview_to_dict
-"""
-import os
-import models
 import unittest
-from datetime import datetime
-from time import sleep
+import pep8
+import sys
+import io
+import sys
+import models
+from os import remove
+from os.path import isfile
 from models.review import Review
+from datetime import datetime
 
 
-class TestReview_instantiation(unittest.TestCase):
-    """Unittests for testing instantiation of the Review class."""
-
-    def test_no_args_instantiates(self):
-        self.assertEqual(Review, type(Review()))
-
-    def test_new_instance_stored_in_objects(self):
-        self.assertIn(Review(), models.storage.all().values())
-
-    def test_id_is_public_str(self):
-        self.assertEqual(str, type(Review().id))
-
-    def test_created_at_is_public_datetime(self):
-        self.assertEqual(datetime, type(Review().created_at))
-
-    def test_updated_at_is_public_datetime(self):
-        self.assertEqual(datetime, type(Review().updated_at))
-
-    def test_place_id_is_public_class_attribute(self):
-        rv = Review()
-        self.assertEqual(str, type(Review.place_id))
-        self.assertIn("place_id", dir(rv))
-        self.assertNotIn("place_id", rv.__dict__)
-
-    def test_user_id_is_public_class_attribute(self):
-        rv = Review()
-        self.assertEqual(str, type(Review.user_id))
-        self.assertIn("user_id", dir(rv))
-        self.assertNotIn("user_id", rv.__dict__)
-
-    def test_text_is_public_class_attribute(self):
-        rv = Review()
-        self.assertEqual(str, type(Review.text))
-        self.assertIn("text", dir(rv))
-        self.assertNotIn("text", rv.__dict__)
-
-    def test_two_reviews_unique_ids(self):
-        rv1 = Review()
-        rv2 = Review()
-        self.assertNotEqual(rv1.id, rv2.id)
-
-    def test_two_reviews_different_created_at(self):
-        rv1 = Review()
-        sleep(0.05)
-        rv2 = Review()
-        self.assertLess(rv1.created_at, rv2.created_at)
-
-    def test_two_reviews_different_updated_at(self):
-        rv1 = Review()
-        sleep(0.05)
-        rv2 = Review()
-        self.assertLess(rv1.updated_at, rv2.updated_at)
-
-    def test_str_representation(self):
-        dt = datetime.today()
-        dt_repr = repr(dt)
-        rv = Review()
-        rv.id = "123456"
-        rv.created_at = rv.updated_at = dt
-        rvstr = rv.__str__()
-        self.assertIn("[Review] (123456)", rvstr)
-        self.assertIn("'id': '123456'", rvstr)
-        self.assertIn("'created_at': " + dt_repr, rvstr)
-        self.assertIn("'updated_at': " + dt_repr, rvstr)
-
-    def test_args_unused(self):
-        rv = Review(None)
-        self.assertNotIn(None, rv.__dict__.values())
-
-    def test_instantiation_with_kwargs(self):
-        dt = datetime.today()
-        dt_iso = dt.isoformat()
-        rv = Review(id="345", created_at=dt_iso, updated_at=dt_iso)
-        self.assertEqual(rv.id, "345")
-        self.assertEqual(rv.created_at, dt)
-        self.assertEqual(rv.updated_at, dt)
-
-    def test_instantiation_with_None_kwargs(self):
-        with self.assertRaises(TypeError):
-            Review(id=None, created_at=None, updated_at=None)
+def setUpModule():
+    '''Set Stuff Up'''
+    models.storage._FileStorage__objects.clear()
+    try:
+        remove(models.storage._FileStorage__file_path)
+    except:
+        pass
 
 
-class TestReview_save(unittest.TestCase):
-    """Unittests for testing save method of the Review class."""
+def tearDownModule():
+    '''Tear Stuff Down'''
+    models.storage._FileStorage__objects.clear()
+    try:
+        remove(models.storage._FileStorage__file_path)
+    except:
+        pass
+
+
+class Test_01_Review_Basics(unittest.TestCase):
+    '''Tests If Review Meets Basic Specs'''
+
+    def test_01_file_existence(self):
+        '''Test if file exists'''
+        self.assertTrue(isfile('models/review.py'),
+                        'Missing review.py file')
+
+    def test_02_pep8_compliance(self):
+        '''Test if file meets pep8 specs'''
+        pep8style = pep8.StyleGuide(quiet=True)
+        result = pep8style.check_files(['models/review.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Fails PEP8 compliance")
+
+    def test_03_method_existence(self):
+        '''Test for method existence'''
+        clsdir = dir(__import__('models').review.Review)
+        self.assertIn('__init__', clsdir, "Missing __init__ method")
+        self.assertIn('__str__', clsdir, "Missing __str__ method")
+        self.assertIn('save', clsdir, "Missing save method")
+        self.assertIn('to_dict', clsdir, "Missing to_dict method")
+
+    def test_04_instantiation(self):
+        '''Test for failed instantiation'''
+        try:
+            obj1 = Review()
+            obj2 = Review('Test')
+            obj3 = Review('id')
+            obj4 = Review(888)
+            obj5 = Review(id="1234")
+            obj6 = Review([1, 'A', 3])
+            obj7 = Review({'A': 1, 'B': 2})
+            obj8 = Review((2, 'B', 6))
+            obj9 = Review({7, 'HI', 10})
+            obj10 = Review(None)
+            obj11 = Review(-666)
+            obj12 = Review(float('nan'))
+            obj13 = Review(float('inf'))
+            obj14 = Review('')
+            obj15 = Review([])
+            obj16 = Review([-5])
+            obj17 = Review({})
+            obj18 = Review({'u': [6, 7]})
+        except:
+            self.fail("Failed Review instantiation")
+        finally:
+            del obj1
+            del obj2
+            del obj3
+            del obj4
+            del obj5
+            del obj6
+            del obj7
+            del obj8
+            del obj9
+            del obj10
+            del obj11
+            del obj12
+            del obj13
+            del obj14
+            del obj15
+            del obj16
+            del obj17
+            del obj18
+
+    def test_05_instance_class_match(self):
+        '''Test if instanced object matches class'''
+        obj1 = Review()
+        self.assertIsInstance(obj1, Review,
+                              "Instanced object is not Review class")
+        del obj1
+
+    def test_06_attr_existence(self):
+        '''Test for public attribute existence'''
+        obj1 = Review()
+        self.assertIsInstance(obj1.id, str,
+                              "Instanced object.id not a string type")
+        self.assertIsInstance(obj1.created_at, datetime,
+                              "Instanced object.created_at not datetime type")
+        self.assertIsInstance(obj1.updated_at, datetime,
+                              "Instanced object.updated_at not datetime type")
+        del obj1
+
+    def test_07_cls_attr_type(self):
+        '''Test Review Class Attribute Types'''
+        obj = Review()
+        self.assertIsInstance(type(obj).text, str,
+                              "Error text not str type")
+        self.assertIsInstance(type(obj).place_id, str,
+                              "Error place_id not str type")
+        self.assertIsInstance(type(obj).user_id, str,
+                              "Error place_id not str type")
+        del obj
+
+    def test_07_dynamic_attr(self):
+        '''Test to dynamically add attributes'''
+        obj1 = Review()
+        try:
+            obj1.test1 = 'TEST'
+            obj1.test2 = [1, 2, 3]
+            obj1.test3 = {'a': 1, 'b': 2, 'c': 3}
+            obj1.test4 = (4, 5, 6)
+            obj1.test5 = {7, 8, 9}
+            obj1.test6 = None
+            obj1.test7 = 0.0
+            obj1.test8 = float('nan')
+            obj1.test9 = float('inf')
+            obj1.test10 = -666
+            obj1.test11 = ''
+            obj1.test12 = []
+            obj1.test13 = [-5]
+            obj1.test14 = {}
+            obj1.test15 = {'u': [6, 7]}
+        except:
+            self.fail("Failed to dynamically add pub inst attributes")
+        self.assertEqual(obj1.__dict__['test1'], 'TEST',
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test2'], [1, 2, 3],
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test3'], {'a': 1, 'b': 2, 'c': 3},
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test4'], (4, 5, 6),
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test5'], {7, 8, 9},
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test6'], None,
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test7'], 0.0,
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertNotEqual(obj1.__dict__['test8'], float('nan'),
+                            "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test9'], float('inf'),
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test10'], -666,
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test11'], '',
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test12'], [],
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test13'], [-5],
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test14'], {},
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(obj1.__dict__['test15'], {'u': [6, 7]},
+                         "Failed to assign value to dynamic pub inst attr")
+        self.assertEqual(len(obj1.__dict__), 18)
+        del obj1
+
+    def test_08_class_attr_defaults(self):
+        '''Test class attributes'''
+        self.assertEqual(Review.text, '',
+                         "Error Review class text default not empty")
+        self.assertEqual(Review.place_id, '',
+                         "Error Review class place_id default not empty")
+        self.assertEqual(Review.user_id, '',
+                         "Error Review class user_id default not empty")
+
+    def test_09_class_attr_assignment(self):
+        '''Test class attr assignment'''
+        Review.text = 'This is the best'
+        Review.place_id = '1111-2345-7777-0987'
+        Review.user_id = '2222-3456-6666-5555'
+        obj1 = Review()
+        self.assertEqual(type(obj1).text, 'This is the best',
+                         "Error incorrect name assignment")
+        self.assertEqual(type(obj1).place_id, '1111-2345-7777-0987',
+                         "Error incorrect place_id assignment")
+        self.assertEqual(type(obj1).user_id, '2222-3456-6666-5555',
+                         "Error incorrect user_id assignment")
+        del obj1
+
+
+class Test_02_Review_Constuctor(unittest.TestCase):
+    '''Test Review Constructor'''
 
     @classmethod
+    def setUpClass(cls):
+        '''Setup Class'''
+        cls.obj1 = Review()
+        cls.obj2 = Review()
+        cls.obj3 = Review()
+
+    @classmethod
+    def tearDownClass(cls):
+        '''Tear Down Class'''
+        del cls.obj1
+        del cls.obj2
+        del cls.obj3
+
+    def test_01_key_existence(self):
+        '''Test for basic key existence'''
+        self.assertIn('id', dir(type(self).obj1), "Missing id key")
+        self.assertIn('created_at', dir(type(self).obj1),
+                      "Missing created_at key")
+        self.assertIn('updated_at', dir(type(self).obj1),
+                      "Missing updated_at key")
+
+    def test_02_id_generation(self):
+        '''Test for different generated IDs'''
+        self.assertNotEqual(type(self).obj1.id, type(self).obj2.id,
+                            "Fail: Same ID")
+        self.assertNotEqual(type(self).obj2.id, type(self).obj3.id,
+                            "Fail: Same ID")
+        self.assertNotEqual(type(self).obj1.id, type(self).obj3.id,
+                            "Fail: Same ID")
+
+    def test_03_datetime(self):
+        '''Test for same datetime'''
+        self.assertEqual(type(self).obj1.created_at,
+                         type(self).obj1.updated_at,
+                         "Fail: Different date times")
+        self.assertEqual(type(self).obj2.created_at,
+                         type(self).obj2.updated_at,
+                         "Fail: Different date times")
+        self.assertEqual(type(self).obj3.created_at,
+                         type(self).obj3.updated_at,
+                         "Fail: Different date times")
+
+
+class Test_04_Review_Str(unittest.TestCase):
+    '''Test Review __str___'''
+
+    @classmethod
+    def setUpClass(cls):
+        '''Set Up Class'''
+        cls.obj1 = Review(id="1234-5678-9012",
+                          created_at="1234-05-06T01:23:45.678901",
+                          updated_at="9999-11-11T11:11:22.222222")
+        cls.god1 = '[Review]'
+        cls.god2 = '(1234-5678-9012)'
+
+    @classmethod
+    def tearDownClass(cls):
+        '''Tear Down Class'''
+        del cls.obj1
+
+    def test_01_str_return_type(self):
+        '''Test __str__ return value'''
+        out = type(self).obj1.__str__()
+        self.assertIsInstance(out, str,
+                              "Error __str__ incorrect return type")
+
+    def test_02_str_format(self):
+        '''Test __str__ format'''
+        out1 = type(self).obj1.__str__().split(' ', 2)[0]
+        out2 = type(self).obj1.__str__().split(' ', 2)[1]
+        self.assertEqual(out1, type(self).god1,
+                         "Class name does not match in __str__ output")
+        self.assertEqual(out2, type(self).god2,
+                         "ID does not match in __str__ output")
+
+    def test_03_str_return_dynamic_attr_ret_type(self):
+        '''Test __str__ return with dynamic attr'''
+        type(self).obj1.test1 = 'TEST'
+        type(self).obj1.test2 = [1, 2, 3]
+        out = type(self).obj1.__str__()
+        self.assertIsInstance(out, str,
+                              "Error improper __str__ return type")
+
+
+class Test_05_Review_Save(unittest.TestCase):
+    '''Test Review Save Method'''
+
+    def test_01_save_datetime(self):
+        '''Check for update datetime change after save'''
+        models.storage.all().clear()
+        obj1 = Review()
+        old_ua = obj1.updated_at
+        try:
+            obj1.save()
+        except:
+            self.fail("Failed to save")
+        new_ua = obj1.updated_at
+        self.assertNotEqual(old_ua, new_ua,
+                            "Failed to change updated at datetime")
+        del obj1
+
+    def test_02_save_consistency(self):
+        '''Check for consistency after save'''
+        models.storage.all().clear()
+        obj1 = Review()
+        old = obj1.__dict__.copy()
+        try:
+            obj1.save()
+        except:
+            self.fail("Failed to save")
+        new = obj1.__dict__.copy()
+        del old['updated_at']
+        del new['updated_at']
+        self.assertEqual(old, new,
+                         "Failed to maintain consistency after save")
+        del obj1
+
+
+class Test_06_Review_To_Dict(unittest.TestCase):
+    '''Test Review To_Dict Method'''
+
     def setUp(self):
-        try:
-            os.rename("file.json", "tmp")
-        except IOError:
-            pass
+        '''Set Up'''
+        self.dct1 = Review().to_dict()
+        self.dct2 = Review().to_dict()
 
-    def tearDown(self):
-        try:
-            os.remove("file.json")
-        except IOError:
-            pass
-        try:
-            os.rename("tmp", "file.json")
-        except IOError:
-            pass
+    def test_01_is_dict_type(self):
+        '''Test to_dict simple'''
+        self.assertIsInstance(self.dct1, dict,
+                              "Failed to_dict does not prodice dictionary"
+                              " type")
 
-    def test_one_save(self):
-        rv = Review()
-        sleep(0.05)
-        first_updated_at = rv.updated_at
-        rv.save()
-        self.assertLess(first_updated_at, rv.updated_at)
+    def test_02_required_keys(self):
+        '''Test for proper output format'''
+        key_list = self.dct1.keys()
+        self.assertIn('id', key_list, "Error 'id' not in to_dict() output")
+        self.assertIn('created_at', key_list,
+                      "Error 'created_by' not in to_dict() output")
+        self.assertIn('updated_at', key_list,
+                      "Error 'updated_at' not in to_dict() output")
+        self.assertIn('__class__', key_list,
+                      "Error '__class__' not in to_dict() output")
 
-    def test_two_saves(self):
-        rv = Review()
-        sleep(0.05)
-        first_updated_at = rv.updated_at
-        rv.save()
-        second_updated_at = rv.updated_at
-        self.assertLess(first_updated_at, second_updated_at)
-        sleep(0.05)
-        rv.save()
-        self.assertLess(second_updated_at, rv.updated_at)
+    def test_03_value_type(self):
+        '''Test for proper value format'''
+        value_list = self.dct1.values()
+        for e in value_list:
+            self.assertIsInstance(e, str, "Error to_dict has non-str value")
 
-    def test_save_with_arg(self):
-        rv = Review()
-        with self.assertRaises(TypeError):
-            rv.save(None)
+    def test_04_classname_value(self):
+        '''Test if class name is properly stored'''
+        self.assertEqual('Review', self.dct1['__class__'],
+                         "Error incorrect key for BaseModel")
 
-    def test_save_updates_file(self):
-        rv = Review()
-        rv.save()
-        rvid = "Review." + rv.id
-        with open("file.json", "r") as f:
-            self.assertIn(rvid, f.read())
+    def test_05_different_to_dict(self):
+        '''Test for different outputs'''
+        self.assertNotEqual(self.dct1, self.dct2,
+                            "Error to_dict does not produce different output")
 
 
-class TestReview_to_dict(unittest.TestCase):
-    """Unittests for testing to_dict method of the Review class."""
-
-    def test_to_dict_type(self):
-        self.assertTrue(dict, type(Review().to_dict()))
-
-    def test_to_dict_contains_correct_keys(self):
-        rv = Review()
-        self.assertIn("id", rv.to_dict())
-        self.assertIn("created_at", rv.to_dict())
-        self.assertIn("updated_at", rv.to_dict())
-        self.assertIn("__class__", rv.to_dict())
-
-    def test_to_dict_contains_added_attributes(self):
-        rv = Review()
-        rv.middle_name = "Holberton"
-        rv.my_number = 98
-        self.assertEqual("Holberton", rv.middle_name)
-        self.assertIn("my_number", rv.to_dict())
-
-    def test_to_dict_datetime_attributes_are_strs(self):
-        rv = Review()
-        rv_dict = rv.to_dict()
-        self.assertEqual(str, type(rv_dict["id"]))
-        self.assertEqual(str, type(rv_dict["created_at"]))
-        self.assertEqual(str, type(rv_dict["updated_at"]))
-
-    def test_to_dict_output(self):
-        dt = datetime.today()
-        rv = Review()
-        rv.id = "123456"
-        rv.created_at = rv.updated_at = dt
-        tdict = {
-            'id': '123456',
-            '__class__': 'Review',
-            'created_at': dt.isoformat(),
-            'updated_at': dt.isoformat(),
-        }
-        self.assertDictEqual(rv.to_dict(), tdict)
-
-    def test_contrast_to_dict_dunder_dict(self):
-        rv = Review()
-        self.assertNotEqual(rv.to_dict(), rv.__dict__)
-
-    def test_to_dict_with_arg(self):
-        rv = Review()
-        with self.assertRaises(TypeError):
-            rv.to_dict(None)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
